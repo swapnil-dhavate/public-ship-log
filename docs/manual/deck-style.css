@@ -1,0 +1,57 @@
+/* Shared deck style (same as the other project architecture decks). */
+@page { size: A4 landscape; margin: 0; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', -apple-system, Helvetica, Arial, sans-serif;
+    margin: 0;
+  }
+  .slide {
+    width: 297mm;
+    height: 210mm;
+    page-break-after: always;
+    background: linear-gradient(155deg, #081426 0%, #0a3d7a 60%, #0a66c2 100%);
+    color: white;
+    padding: 16mm 20mm;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .slide:last-child { page-break-after: auto; }
+  .kicker {
+    letter-spacing: 3px; font-size: 11px; font-weight: 700;
+    color: #7fc4ff; text-transform: uppercase; margin-bottom: 10px;
+  }
+  h1 { font-size: 40px; font-weight: 800; margin: 0 0 8px 0; line-height: 1.1; }
+  h2 { font-size: 30px; font-weight: 800; margin: 0 0 6px 0; }
+  .sub { font-size: 15px; color: #cfe3fa; max-width: 620px; }
+  .center { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; flex: 1; }
+  .left { display: flex; flex-direction: column; justify-content: center; flex: 1; }
+
+  .steps { display: flex; gap: 16px; margin-top: 26px; }
+  .step {
+    flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 10px; padding: 20px 14px; text-align: center;
+  }
+  .step .num { font-size: 26px; font-weight: 800; color: #7fc4ff; margin-bottom: 6px; }
+  .step .t { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .step .d { font-size: 10.5px; color: #cfe3fa; }
+  .arrow-row { display:flex; align-items:center; justify-content:center; gap:6px; margin: 4px 0; }
+  .arrow-row .arrow { color:#7fc4ff; font-size:20px; }
+
+  .badge-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 24px; }
+  .badge-card {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 10px; padding: 16px 20px; min-width: 150px; text-align: center;
+  }
+  .badge-card .t { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .badge-card .d { font-size: 10px; color: #cfe3fa; }
+
+  .big-stat { font-size: 64px; font-weight: 800; color: #7fc4ff; }
+  .big-stat-label { font-size: 15px; color: #eaf4ff; margin-top: 4px; }
+
+  figure { margin: 0; display: flex; justify-content: center; }
+  figcaption { display: none; }
+  svg text { font-family: 'Segoe UI', Arial, sans-serif; }
+
+  .page-num { position: absolute; bottom: 8mm; right: 12mm; font-size: 9px; color: rgba(255,255,255,0.4); }
+  .logo-tag { position: absolute; top: 10mm; right: 16mm; font-size: 10px; color: rgba(255,255,255,0.45); letter-spacing: 1px; }
