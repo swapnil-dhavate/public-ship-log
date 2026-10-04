@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ship Log</title>
+<meta name="description" content="A public log of every day I work on my projects.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚢</text></svg>">
+<style>
+:root {
+  --bg: #f7f6f2; --card: #ffffff; --text: #1d1d1b; --muted: #6b6a64; --line: #e6e4dc;
+  --accent: #e8590c; --ok: #2b8a3e; --warn: #c25e00; --warn-bg: #fff1e0; --ok-bg: #e7f6ea;
+  --h0: #ebeae4; --h1: #b7e4c0; --h2: #69c27e; --h3: #2f9e4a; --h4: #1b6b30;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121211; --card: #1c1c1a; --text: #ecebe6; --muted: #9b9a93; --line: #2d2d2a;
+    --accent: #ff8a3d; --ok: #69db7c; --warn: #ffa94d; --warn-bg: #2f2210; --ok-bg: #15281a;
+    --h0: #262624; --h1: #1d4a2a; --h2: #2b7a41; --h3: #43a85d; --h4: #7ee08f;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121211; --card: #1c1c1a; --text: #ecebe6; --muted: #9b9a93; --line: #2d2d2a;
+  --accent: #ff8a3d; --ok: #69db7c; --warn: #ffa94d; --warn-bg: #2f2210; --ok-bg: #15281a;
+  --h0: #262624; --h1: #1d4a2a; --h2: #2b7a41; --h3: #43a85d; --h4: #7ee08f;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+a { color: inherit; text-decoration-color: var(--line); text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--accent); }
+header h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: -0.02em; }
+header p { margin: 0; color: var(--muted); }
+.links { margin-top: 8px; display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin-top: 20px; }
+.hero { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.big { font-size: 72px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.big small { font-size: 18px; font-weight: 600; color: var(--muted); letter-spacing: 0; margin-left: 6px; }
+.pill { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 14px; font-weight: 600; margin-top: 10px; }
+.pill.ok { background: var(--ok-bg); color: var(--ok); }
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pill.off { background: var(--h0); color: var(--muted); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 20px; }
+.stat { border-top: 1px solid var(--line); padding-top: 10px; }
+.stat b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 13px; }
+h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 14px; }
+.heat-wrap { overflow-x: auto; padding-bottom: 4px; }
+.months { display: grid; grid-auto-flow: column; grid-auto-columns: 14px; font-size: 11px; color: var(--muted); height: 16px; margin-left: 28px; }
+.heat-row { display: flex; gap: 6px; }
+.wd { display: grid; grid-template-rows: repeat(7, 11px); gap: 3px; font-size: 10px; color: var(--muted); width: 22px; }
+.heat { display: grid; grid-template-rows: repeat(7, 11px); grid-auto-flow: column; grid-auto-columns: 11px; gap: 3px; }
+.heat i { width: 11px; height: 11px; border-radius: 2px; background: var(--h0); }
+.heat i.l1 { background: var(--h1); } .heat i.l2 { background: var(--h2); }
+.heat i.l3 { background: var(--h3); } .heat i.l4 { background: var(--h4); }
+.heat i.today { outline: 1.5px solid var(--accent); outline-offset: 1px; }
+.heat i.pad { visibility: hidden; }
+.legend { display: flex; align-items: center; gap: 4px; justify-content: flex-end; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.legend i { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
+.day { padding: 14px 0; border-top: 1px solid var(--line); }
+.day:first-of-type { border-top: 0; padding-top: 0; }
+.day-head { display: flex; justify-content: space-between; gap: 12px; font-weight: 700; margin-bottom: 6px; }
+.day-head span { font-weight: 500; color: var(--muted); font-size: 14px; white-space: nowrap; }
+.item { display: flex; gap: 10px; padding: 3px 0; overflow-wrap: anywhere; }
+.item .ico { flex: none; width: 20px; text-align: center; }
+.item .meta { color: var(--muted); font-size: 13px; }
+.post { margin: 8px 0 2px 30px; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--bg); border-radius: 0 8px 8px 0; font-size: 15px; white-space: pre-line; overflow-wrap: anywhere; }
+.post a { font-size: 13px; color: var(--muted); }
+button.more { margin-top: 12px; background: none; border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; font: inherit; font-size: 14px; cursor: pointer; }
+footer { margin-top: 28px; color: var(--muted); font-size: 13px; text-align: center; }
+.empty { color: var(--muted); }
+@media (max-width: 560px) {
+  .big { font-size: 56px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 id="title">Ship Log</h1>
+    <p id="subtitle"></p>
+    <div class="links" id="links"></div>
+  </header>
+
+  <section class="card">
+    <div class="hero">
+      <div>
+        <div class="big"><span id="streak">–</span><small>day streak 🔥</small></div>
+        <div id="status" class="pill off">Loading…</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="longest">–</b><span>longest streak</span></div>
+      <div class="stat"><b id="days">–</b><span>days shipped</span></div>
+      <div class="stat"><b id="hours">–</b><span>hours logged</span></div>
+      <div class="stat"><b id="commits">–</b><span>commits</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Last 12 months</h2>
+    <div class="heat-wrap">
+      <div class="months" id="months"></div>
+      <div class="heat-row">
+        <div class="wd"><span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span></div>
+        <div class="heat" id="heat"></div>
+      </div>
+    </div>
+    <div class="legend">Less <i style="background:var(--h0)"></i><i style="background:var(--h1)"></i><i style="background:var(--h2)"></i><i style="background:var(--h3)"></i><i style="background:var(--h4)"></i> More</div>
+  </section>
+
+  <section class="card">
+    <h2>Timeline</h2>
+    <div id="timeline"><p class="empty">Loading…</p></div>
+    <button class="more" id="more" hidden>Show older days</button>
+  </section>
+
+  <footer id="footer">Logged from Telegram and GitHub commits. Days are counted in IST.</footer>
+</main>
+
+<script>
+const DAY = 86400000;
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const istToday = () => new Date(Date.now() + 5.5 * 3600000).toISOString().slice(0, 10);
+const addDays = (iso, n) => new Date(Date.parse(iso + "T00:00:00Z") + n * DAY).toISOString().slice(0, 10);
+const nice = iso => { const d = new Date(iso + "T00:00:00Z"); return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`; };
+let shownDays = 14, DATA = null;
+
+// Mirrors shiplog/streak.py so the badge stays right even if the data is a few hours old.
+function liveStreak(days) {
+  const today = istToday(), has = d => days[d] && days[d].n > 0;
+  const loggedToday = has(today);
+  let n = 0, d = loggedToday ? today : addDays(today, -1);
+  while (has(d)) { n++; d = addDays(d, -1); }
+  return { current: n, loggedToday, atRisk: !loggedToday && n > 0 };
+}
+
+function renderHeader(data) {
+  document.title = data.title;
+  document.getElementById("title").textContent = data.title;
+  document.getElementById("subtitle").textContent = data.subtitle;
+  document.getElementById("links").innerHTML = (data.links || [])
+    .map(l => `<a href="${esc(l.url)}" rel="me noopener" target="_blank">${esc(l.label)}</a>`).join("");
+  const s = data.stats, live = liveStreak(data.days);
+  document.getElementById("streak").textContent = live.current;
+  document.getElementById("longest").textContent = Math.max(s.longest, live.current);
+  document.getElementById("days").textContent = s.total_days;
+  document.getElementById("hours").textContent = s.total_hours;
+  document.getElementById("commits").textContent = s.total_commits;
+  const st = document.getElementById("status");
+  if (live.loggedToday) { st.className = "pill ok"; st.textContent = "✓ Shipped today"; }
+  else if (live.atRisk) { st.className = "pill warn"; st.textContent = "Streak at risk — nothing logged today yet"; }
+  else { st.className = "pill off"; st.textContent = s.last_logged ? `Last shipped ${nice(s.last_logged)}` : "No days logged yet"; }
+}
+
+function renderHeatmap(days) {
+  const today = istToday();
+  const dow = new Date(today + "T00:00:00Z").getUTCDay();   // 0 = Sunday
+  const start = addDays(today, -(52 * 7 + dow));
+  const cells = [], months = [];
+  let lastMonth = -1;
+  for (let i = 0, d = start; d <= today; i++, d = addDays(d, 1)) {
+    const info = days[d], n = info ? info.n : 0;
+    const lvl = n === 0 ? 0 : n === 1 ? 1 : n <= 3 ? 2 : n <= 6 ? 3 : 4;
+    const tip = n ? `${nice(d)}: ${n} entr${n === 1 ? "y" : "ies"}${info.h ? `, ${info.h}h` : ""}` : `${nice(d)}: nothing logged`;
+    cells.push(`<i class="l${lvl}${d === today ? " today" : ""}" title="${tip}"></i>`);
+    if (i % 7 === 0) {
+      const m = new Date(d + "T00:00:00Z").getUTCMonth();
+      months.push(m !== lastMonth && i < 52 * 7 ? MONTHS[m] : "");
+      lastMonth = m;
+    }
+  }
+  document.getElementById("heat").innerHTML = cells.join("");
+  document.getElementById("months").innerHTML = months.map(m => `<span>${m}</span>`).join("");
+  const wrap = document.querySelector(".heat-wrap");
+  wrap.scrollLeft = wrap.scrollWidth;  // on phones, start at the most recent weeks
+}
+
+function renderTimeline(data) {
+  const byDay = new Map();
+  for (const e of data.timeline) { if (!byDay.has(e.date)) byDay.set(e.date, []); byDay.get(e.date).push(e); }
+  const postsByDay = {};
+  for (const p of data.posts) (postsByDay[p.date] = postsByDay[p.date] || []).push(p);
+  const dates = [...byDay.keys()];
+  const el = document.getElementById("timeline");
+  if (!dates.length) { el.innerHTML = `<p class="empty">Nothing logged yet. The first entry will show up here.</p>`; return; }
+  el.innerHTML = dates.slice(0, shownDays).map(d => {
+    const items = byDay.get(d).slice().reverse();
+    const hours = items.reduce((a, e) => a + (e.hours || 0), 0);
+    const rows = items.map(e => {
+      const isCommit = e.source === "github";
+      const repo = isCommit && e.repo && e.repo !== "private" ? e.repo.split("/").pop() : "";
+      const text = e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.text)}</a>` : esc(e.text);
+      const meta = [repo, e.hours ? `${e.hours}h` : ""].filter(Boolean).join(" · ");
+      return `<div class="item"><span class="ico" title="${isCommit ? "commit" : "note"}">${isCommit ? "💻" : "✍️"}</span>
+        <div>${text}${meta ? ` <span class="meta">${esc(meta)}</span>` : ""}</div></div>`;
+    }).join("");
+    const posts = (postsByDay[d] || []).map(p =>
+      `<div class="post">${esc(p.text)}\n<a href="${esc(p.url)}" target="_blank" rel="noopener">View on Bluesky →</a></div>`).join("");
+    const summary = `${items.length} entr${items.length === 1 ? "y" : "ies"}${hours ? ` · ${Math.round(hours * 10) / 10}h` : ""}`;
+    return `<div class="day"><div class="day-head">${d === istToday() ? "Today" : nice(d)}<span>${summary}</span></div>${rows}${posts}</div>`;
+  }).join("");
+  document.getElementById("more").hidden = dates.length <= shownDays;
+}
+
+function render(data) {
+  DATA = data;
+  renderHeader(data);
+  renderHeatmap(data.days);
+  renderTimeline(data);
+  const gen = new Date(data.generated);
+  document.getElementById("footer").textContent =
+    `Logged from Telegram and GitHub commits. Days are counted in IST. Data last changed ${gen.toLocaleString()}.`;
+}
+
+async function load() {
+  try {
+    const res = await fetch("data.json?t=" + Date.now(), { cache: "no-store" });
+    render(await res.json());
+  } catch (e) {
+    document.getElementById("status").textContent = "Couldn't load data.json";
+  }
+}
+
+document.getElementById("more").onclick = () => { shownDays += 30; renderTimeline(DATA); };
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>

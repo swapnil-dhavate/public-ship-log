@@ -1,0 +1,15 @@
+{
+  "title": "Swapnil's Ship Log",
+  "subtitle": "Every day I work on my side projects shows up here. Streak counted in IST.",
+  "github_repos": [],
+  "github_author": "",
+  "github_backfill_days": 14,
+  "redact_private_repos": true,
+  "ignore_commits_matching": ["[skip ci]", "[ci skip]"],
+  "reminder_time_ist": "21:00",
+  "draft_time_ist": "22:30",
+  "approval_required": true,
+  "hashtags": ["buildinpublic"],
+  "site_url": "",
+  "links": []
+}
