@@ -2,18 +2,18 @@
  "title": "Swapnil's Ship Log",
  "subtitle": "Every day I work on my side projects shows up here. Streak counted in IST.",
  "links": [],
- "generated": "2026-10-17T13:10:38+05:30",
+ "generated": "2026-10-18T01:45:39+05:30",
  "stats": {
   "current": 1,
   "longest": 1,
   "total_days": 2,
-  "logged_today": true,
-  "at_risk": false,
+  "logged_today": false,
+  "at_risk": true,
   "last_logged": "2026-10-17",
   "total_entries": 3,
   "total_hours": 0,
   "total_commits": 3,
-  "today": "2026-10-17"
+  "today": "2026-10-18"
  },
  "days": {
   "2026-10-04": {
