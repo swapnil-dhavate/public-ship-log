@@ -1,7 +1,14 @@
+import contextlib
+import io
+import json
+import os
+import tempfile
 import unittest
 from datetime import date, datetime, timezone
+from pathlib import Path
+from unittest import mock
 
-from shiplog import bluesky, writer
+from shiplog import bluesky, github_sync, store, writer
 from shiplog.bot import parse_log
 from shiplog.streak import compute, to_ist
 
@@ -65,6 +72,88 @@ class PostTests(unittest.TestCase):
         raw = text.encode("utf-8")
         got = {raw[x["index"]["byteStart"]:x["index"]["byteEnd"]].decode() for x in f}
         self.assertEqual(got, {"#buildinpublic", "https://a.io/x"})
+
+
+def commit(sha, login, email, message="secret work", date_="2026-10-10T10:00:00Z"):
+    return {"sha": sha, "parents": [{}], "html_url": f"https://github.com/x/commit/{sha}",
+            "author": {"login": login} if login else None,
+            "commit": {"message": message, "author": {"email": email, "date": date_}}}
+
+
+class GithubSyncTests(unittest.TestCase):
+    ME = "swapnil-dhavate"
+
+    def test_is_mine_matches_login_and_noreply_only(self):
+        mine = github_sync._is_mine
+        self.assertTrue(mine(commit("a", "Swapnil-Dhavate", "x@example.com"), self.ME))
+        self.assertTrue(mine(commit("b", None, "256497006+swapnil-dhavate@users.noreply.github.com"), self.ME))
+        self.assertTrue(mine(commit("c", None, "swapnil-dhavate@users.noreply.github.com"), self.ME))
+        self.assertFalse(mine(commit("d", None, "someone@work.example"), self.ME))
+        self.assertFalse(mine(commit("e", "rushi6298", "someone@work.example"), self.ME))
+        self.assertFalse(mine(commit("f", None, "1+not-swapnil-dhavate@users.noreply.github.com"), self.ME))
+
+    def test_private_repo_names_only_come_from_env_and_get_labels(self):
+        cfg = {"github_repos": ["me/public-one"]}
+        with mock.patch.dict(os.environ, {"SHIPLOG_REPOS": "me/secret-a, me/secret-b,me/public-one"}):
+            got = github_sync.repos(cfg)
+        self.assertEqual(got, [("me/public-one", "me/public-one"), ("me/secret-a", "private repo #1"),
+                               ("me/secret-b", "private repo #2")])
+
+    def _run_sync(self, repo_info, commits, state=None, fail=()):
+        """Run sync() against fake GitHub data in a temp data dir; return (entries, state, log)."""
+        cfg = {"github_repos": [], "github_author": self.ME, "github_backfill_days": 14,
+               "redact_private_repos": True, "ignore_commits_matching": ["[skip ci]"]}
+
+        def fake_get(url, **kw):
+            repo = url.split("/repos/", 1)[1].split("/commits")[0]
+            if repo in fail:
+                raise RuntimeError(f"HTTP 404 for {url}")
+            return commits[repo] if url.endswith("/commits") else repo_info[repo]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            data = Path(tmp)
+            if state:
+                (data / "state.json").write_text(json.dumps(state), encoding="utf-8")
+            out = io.StringIO()
+            with mock.patch.object(store, "DATA_DIR", data), \
+                    mock.patch.object(github_sync.env, "config", return_value=cfg), \
+                    mock.patch.object(github_sync.net, "get", side_effect=fake_get), \
+                    mock.patch.dict(os.environ, {"SHIPLOG_REPOS": ",".join(repo_info)}), \
+                    contextlib.redirect_stdout(out):
+                github_sync.sync(verbose=True)
+            return store_load(data, "entries"), store_load(data, "state"), out.getvalue()
+
+    def test_private_commits_are_redacted_and_names_never_logged_or_saved(self):
+        info = {"me/hidden-proj": {"id": 11, "private": True}, "me/no-flag": {"id": 12}}
+        commits = {
+            "me/hidden-proj": [commit("s1", self.ME, "x@y.z", "add payroll export"),
+                               commit("s2", None, "someone@work.example", "colleague commit")],
+            "me/no-flag": [commit("s3", self.ME, "x@y.z", "top secret thing")],
+        }
+        entries, state, log = self._run_sync(info, commits)
+        self.assertEqual([e["sha"] for e in entries], ["s1", "s3"])
+        blob = json.dumps([entries, state]) + log
+        for leak in ("hidden-proj", "no-flag", "payroll", "top secret", "colleague", "x@y.z"):
+            self.assertNotIn(leak, blob)
+        self.assertTrue(all(e["repo"] == "private" and "url" not in e for e in entries))
+
+    def test_public_repo_keeps_message_and_link(self):
+        info = {"me/open": {"id": 5, "private": False}}
+        entries, _, _ = self._run_sync(info, {"me/open": [commit("p1", self.ME, "x@y.z", "fix heatmap\n\nbody")]})
+        self.assertEqual((entries[0]["text"], entries[0]["repo"]), ("fix heatmap", "me/open"))
+        self.assertIn("url", entries[0])
+
+    def test_unreadable_repo_keeps_its_backfill_for_later(self):
+        info = {"me/later": {"id": 7, "private": True}}
+        entries, state, log = self._run_sync(info, {"me/later": []}, fail=("me/later",))
+        self.assertEqual(entries, [])
+        self.assertNotIn("7", state.get("github_cursors", {}))
+        self.assertNotIn("me/later", log)
+
+
+def store_load(data_dir, name):
+    path = data_dir / f"{name}.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else ([] if name == "entries" else {})
 
 
 if __name__ == "__main__":

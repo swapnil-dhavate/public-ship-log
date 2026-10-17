@@ -63,6 +63,7 @@ Copy `.env.example` to `.env` and fill it in:
 - `GROQ_API_KEY`: free key from https://console.groq.com/keys. This is the backup writer. If both AI services
   fail, a simple template is used, so you always get a draft.
 - `GH_TOKEN`: only needed for private repos. Use a fine-grained GitHub token with read-only "Contents" access.
+- `SHIPLOG_REPOS`: your **private** repos to count, comma separated (`owner/name,owner/name`). See step 4.
 - `BLUESKY_HANDLE` / `BLUESKY_APP_PASSWORD`: use an **app password** (Bluesky → Settings → Privacy and security →
   App passwords), not your real password.
 - `BLUESKY_DRY_RUN=1`: while this is 1, pressing Approve does **not** really post. Change it to `0` when you're
@@ -80,12 +81,20 @@ Nothing needs installing because the project uses only built-in Python.
 
 Options: `--no-schedule` turns off the 9 PM reminder and nightly draft on your PC. `--page-only` shows just the page.
 
-### 4. Choose which repos count (`config.json`)
+### 4. Choose which repos count
+**Public repos** go in `config.json`:
 ```json
-"github_repos": ["swapnil-dhavate/some-repo", "swapnil-dhavate/another-repo"],
+"github_repos": ["swapnil-dhavate/public-ship-log"],
 "github_author": "swapnil-dhavate"
 ```
-`github_author` makes sure only *your* commits count. The first sync looks back `github_backfill_days` days.
+**Private repos** go in `SHIPLOG_REPOS` instead (in `.env`, and as an Actions secret on GitHub), comma separated.
+This repo is public, so a list in `config.json` would show your private repo names to anyone. The names from
+`SHIPLOG_REPOS` are never printed in the Actions logs or saved in `data/`.
+
+`github_author` makes sure only *your* commits count: a commit counts if GitHub links it to that account, or if it
+was made with the account's `...@users.noreply.github.com` address. Commits made under another git identity don't
+count. Each repo's first successful sync looks back `github_backfill_days` days, so a repo the token can't read yet
+gets its history once you give the token access.
 Commits to **private** repos show as "Pushed a commit to a private project" with no name or message, because the
 log is public. Set `redact_private_repos` to `false` if you don't mind showing them.
 
@@ -103,7 +112,8 @@ Other settings in `config.json`:
    Remember that everything in `data/` is public, because that's the point of the project.
 2. Repo → **Settings → Secrets and variables → Actions**:
    - **Secrets:** add `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `GEMINI_API_KEY`, `GROQ_API_KEY`,
-     `BLUESKY_HANDLE` and `BLUESKY_APP_PASSWORD`. Add `GH_TOKEN` too if you track private repos.
+     `BLUESKY_HANDLE` and `BLUESKY_APP_PASSWORD`. Add `GH_TOKEN` and `SHIPLOG_REPOS` too if you
+     track private repos.
    - **Variables:** add `BLUESKY_DRY_RUN` = `0` when you want real posts. The default is dry-run.
 3. Repo → **Settings → Pages** → Source: **GitHub Actions**.
 4. Repo → **Actions** → *ship-log* → **Run workflow** once to start it.
