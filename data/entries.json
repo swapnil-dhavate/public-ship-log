@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": "ddd0a946cc",
+    "date": "2026-10-04",
+    "time": "2026-10-04T18:44:12+05:30",
+    "source": "github",
+    "text": "Public Ship Log: daily build streak tracker",
+    "repo": "swapnil-dhavate/public-ship-log",
+    "sha": "ca900bbd935e651e1d9081aee181fba67aff7cfa",
+    "url": "https://github.com/swapnil-dhavate/public-ship-log/commit/ca900bbd935e651e1d9081aee181fba67aff7cfa"
+  },
+  {
+    "id": "94ca2cef6e",
+    "date": "2026-10-04",
+    "time": "2026-10-04T19:06:07+05:30",
+    "source": "github",
+    "text": "Add architecture deck and user manuals (docs/manual)",
+    "repo": "swapnil-dhavate/public-ship-log",
+    "sha": "442c74bd12fa692df6cab4e96ca7e6bfd98a0700",
+    "url": "https://github.com/swapnil-dhavate/public-ship-log/commit/442c74bd12fa692df6cab4e96ca7e6bfd98a0700"
+  },
+  {
+    "id": "c30c117a2f",
+    "date": "2026-10-17",
+    "time": "2026-10-17T13:10:18+05:30",
+    "source": "github",
+    "text": "Count my commits reliably and keep private repo names out of the public repo",
+    "repo": "swapnil-dhavate/public-ship-log",
+    "sha": "e43bfae107616a50f0fe40ae6f1ec0a2b49d4034",
+    "url": "https://github.com/swapnil-dhavate/public-ship-log/commit/e43bfae107616a50f0fe40ae6f1ec0a2b49d4034"
+  }
+]
